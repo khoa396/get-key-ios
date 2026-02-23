@@ -3,41 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xác thực Key</title>
+    <title>Web Proxy Của Tôi</title>
     <style>
-        /* Căn giữa "lỗ châu mai" ra giữa màn hình chính của bạn */
-        body {
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; 
+            background-color: #f4f7f8;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f4f7f8; /* Màu nền tùy chọn của web bạn */
         }
 
-        /* 1. ĐÂY LÀ "LỖ CHÂU MAI" (Khung nhìn) */
+        /* KHUNG NHÌN (Lỗ châu mai) */
         .iframe-wrapper {
-            width: 400px;   /* Chiều rộng vừa đủ ôm nút bấm + Cloudflare */
-            height: 250px;  /* Chiều cao vừa đủ ôm nút bấm + Cloudflare */
-            overflow: hidden; /* CẮT BỎ hoàn toàn những gì lọt ra ngoài khung này */
+            width: 400px;   
+            height: 200px;  
+            overflow: hidden; 
             position: relative;
-            border-radius: 8px; /* Bo góc cho đẹp */
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Đổ bóng nhẹ */
+            border-radius: 8px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
             background: white;
         }
 
-        /* 2. ĐÂY LÀ TRANG WEB BỊ NHÚNG BÊN TRONG */
         .iframe-wrapper iframe {
             position: absolute;
-            
-            /* Ép kích thước trang gốc phải to và cố định để bố cục của nó không bị vỡ/di chuyển */
             width: 1200px; 
             height: 800px; 
             
-            /* Dịch chuyển bản đồ (iframe) lên trên và sang trái để nút bấm lọt vào đúng khung nhìn */
-            /* !!! LƯU Ý: Bạn sẽ cần tăng/giảm 2 con số này một chút để khớp 100% với màn hình của bạn !!! */
-            top: -400px;  /* Đẩy trang lên trên (số âm càng lớn càng đẩy lên cao) */
-            left: -400px; /* Đẩy trang sang trái (số âm càng lớn càng đẩy sang trái) */
+            /* LƯU Ý: Vị trí này đang được căn cho authtool.app */
+            top: -480px;  
+            left: -400px; 
             
             border: none;
         }
@@ -50,20 +48,38 @@
     </div>
 
     <script>
-        // 1. Phân tích URL hiện tại để lấy phần đuôi "?code=..."
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
+        // 1. Lấy toàn bộ phần đuôi trên thanh địa chỉ (VD: ?domain=...&token=...)
+        const searchString = window.location.search;
+        const urlParams = new URLSearchParams(searchString);
+        
+        // 2. Lấy giá trị của 'domain'
+        const domain = urlParams.get('domain');
+        
+        // 3. Lấy giá trị 'token' (Dùng mẹo cắt chuỗi để không bị lỗi mất dữ liệu khi có dấu "&")
+        let token = "";
+        if (searchString.includes("token=")) {
+            // Cắt chuỗi từ chữ "token=" và lấy toàn bộ phần đuôi phía sau nó
+            token = searchString.split("token=")[1];
+        }
+
         const iframe = document.getElementById('mainIframe');
 
-        // 2. Nhúng link + Dọn sạch thanh địa chỉ ngay lập tức
-        if (code) {
-            iframe.src = `https://authtool.app/get-key/?code=${code}`;
+        // 4. Nếu trên URL có truyền đủ domain và token thì bắt đầu nhúng
+        if (domain && token) {
             
+            // Kiểm tra xem domain gốc đã có dấu "?" chưa để ghép cho đúng chuẩn
+            const separator = domain.includes('?') ? '&' : '?';
+            
+            // Ghép link hoàn chỉnh đưa vào iframe
+            iframe.src = domain + separator + token;
+            
+            // 5. XÓA DẤU VẾT: Dọn sạch thanh địa chỉ ngay lập tức
             if (window.history.replaceState) {
                 const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
                 window.history.replaceState({path: cleanUrl}, '', cleanUrl);
             }
         } else {
+            // Mặc định nếu không truyền thông số gì, hoặc có người truy cập thẳng vào web
             iframe.src = "https://authtool.app/get-key/";
         }
     </script>
