@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>get key ios</title>
+    <title>Get Key DK-Game</title>
     <style>
         body, html {
             margin: 0;
@@ -20,7 +20,7 @@
         /* KHUNG NHÌN (Lỗ châu mai) */
         .iframe-wrapper {
             width: 400px;   
-            height: 300px;  
+            height: 200px;  
             overflow: hidden; 
             position: relative;
             border-radius: 8px; 
@@ -32,12 +32,8 @@
             position: absolute;
             width: 1200px; 
             height: 800px; 
-            
-            /* LƯU Ý: Vị trí này đang được căn cho authtool.app */
-            top: -450px;  
-            left: -400px; 
-            
             border: none;
+            /* Đã xóa top và left ở đây, JavaScript sẽ tự điền vào */
         }
     </style>
 </head>
@@ -48,38 +44,53 @@
     </div>
 
     <script>
-        // 1. Lấy toàn bộ phần đuôi trên thanh địa chỉ (VD: ?domain=...&token=...)
         const searchString = window.location.search;
         const urlParams = new URLSearchParams(searchString);
         
-        // 2. Lấy giá trị của 'domain'
         const domain = urlParams.get('domain');
         
-        // 3. Lấy giá trị 'token' (Dùng mẹo cắt chuỗi để không bị lỗi mất dữ liệu khi có dấu "&")
         let token = "";
         if (searchString.includes("token=")) {
-            // Cắt chuỗi từ chữ "token=" và lấy toàn bộ phần đuôi phía sau nó
             token = searchString.split("token=")[1];
         }
 
         const iframe = document.getElementById('mainIframe');
 
-        // 4. Nếu trên URL có truyền đủ domain và token thì bắt đầu nhúng
         if (domain && token) {
             
-            // Kiểm tra xem domain gốc đã có dấu "?" chưa để ghép cho đúng chuẩn
+            // ==========================================
+            // LOGIC CHỈNH TỌA ĐỘ DỰA THEO DOMAIN
+            // ==========================================
+            if (domain.includes('authtool.app')) {
+                // Tọa độ cho Authtool (Bạn đã căn chuẩn)
+                iframe.style.top = '-480px';
+                iframe.style.left = '-400px';
+                
+            } else if (domain.includes('v4.ppapikey.xyz')) {
+                // Tọa độ cho PPAPIKey (⚠️ Bạn cần tự chỉnh lại số này cho khớp UI của họ)
+                iframe.style.top = '-300px'; 
+                iframe.style.left = '-400px';
+                
+            } else if (domain.includes('layma.net')) {
+                // Tọa độ cho Layma (⚠️ Bạn cần tự chỉnh lại số này cho khớp UI của họ)
+                iframe.style.top = '-350px';
+                iframe.style.left = '-400px';
+                
+            } else {
+                // Tọa độ mặc định nếu gặp domain lạ
+                iframe.style.top = '-480px';
+                iframe.style.left = '-400px';
+            }
+            // ==========================================
+
             const separator = domain.includes('?') ? '&' : '?';
-            
-            // Ghép link hoàn chỉnh đưa vào iframe
             iframe.src = domain + separator + token;
             
-            // 5. XÓA DẤU VẾT: Dọn sạch thanh địa chỉ ngay lập tức
             if (window.history.replaceState) {
                 const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
                 window.history.replaceState({path: cleanUrl}, '', cleanUrl);
             }
         } else {
-            // Mặc định nếu không truyền thông số gì, hoặc có người truy cập thẳng vào web
             iframe.src = "https://authtool.app/get-key/";
         }
     </script>
